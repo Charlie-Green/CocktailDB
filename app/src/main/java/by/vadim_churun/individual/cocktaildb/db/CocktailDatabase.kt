@@ -24,7 +24,7 @@ abstract class CocktailDatabase: RoomDatabase() {
     companion object {
         private var instance: CocktailDatabase? = null
 
-        fun getInstance(appContext: Context)
+        fun get(appContext: Context)
             = instance ?: synchronized(this) {
                 instance ?: Room
                     .databaseBuilder(appContext, CocktailDatabase::class.java, "cocktail")
