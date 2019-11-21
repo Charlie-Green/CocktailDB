@@ -14,13 +14,11 @@
             android:layout_height="match_parent" >
 
         <ImageView
-                android:id="@+id/imgvThumb"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:paddingTop="12dp"
-                android:background="#808080"
-                android:src="@drawable/ic_cocktail"
-                android:tint="#404040"/>
+            android:id="@+id/imgvThumb"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_cocktail" />
 
         <FrameLayout
                 android:layout_width="match_parent"

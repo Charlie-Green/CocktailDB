@@ -17,6 +17,7 @@ object RepoTransformations {
         = DrinkEntity(
             pojo.ID,
             pojo.name,
+            pojo.thumbURL,
             pojo.dateModified?.let {
                 try {
                     val parsedTime = DRINK_DATE_MODIFIED_FORMAT.parse(it)

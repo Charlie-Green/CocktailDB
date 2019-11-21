@@ -4,9 +4,10 @@ import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.view.*
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import by.vadim_churun.individual.cocktaildb.R
-import by.vadim_churun.individual.cocktaildb.vm.represent.DrinksList
+import by.vadim_churun.individual.cocktaildb.vm.represent.*
 import kotlinx.android.synthetic.main.drinks_listitem.view.*
 
 
@@ -22,7 +23,8 @@ private fun View.fade(fadeIn: Boolean) {
 
 class DrinksAdapter(
     val context: Context,
-    val list: DrinksList
+    val list: DrinksList,
+    private val requestThumb: (id: Int) -> Unit
 ): RecyclerView.Adapter<DrinksAdapter.DrinkViewHolder>() {
     ///////////////////////////////////////////////////////////////////////////////////////////////
     // USER INTERACTION:
@@ -52,6 +54,17 @@ class DrinksAdapter(
 
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
+    // DYNAMIC DATA:
+
+    fun addThumb(thumb: DrinkThumb) {
+        list.setImageFor(thumb.drinkID, thumb.image)
+        list.positionFor(thumb.drinkID)?.also {
+            super.notifyItemChanged(it)
+        }
+    }
+
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
     // ADAPTER METHODS IMPLEMENTATION:
 
     override fun getItemCount(): Int
@@ -64,7 +77,20 @@ class DrinksAdapter(
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onBindViewHolder(holder: DrinkViewHolder, position: Int) {
-        // holder.imgvThumb = TODO()
+        val drink = list.at(position)
+        val thumb = list.imageFor(drink.ID)
+        if(thumb == null) {
+            holder.imgvThumb.setBackgroundColor(
+                ContextCompat.getColor(context, R.color.DrinkDefaultBack)
+            )
+            val defaultDrawable = context.getDrawable(R.drawable.ic_cocktail)!!.mutate()
+            defaultDrawable.setTint(0xff404040.toInt())
+            holder.imgvThumb.setImageDrawable(defaultDrawable)
+            requestThumb(drink.ID)
+        } else {
+            holder.imgvThumb.setBackgroundColor(0x00000000)
+            holder.imgvThumb.setImageBitmap(thumb)
+        }
         holder.tvName.text = list.at(position).name
 
         val detector = GestureDetector( context, HighlightOrClickListener(holder) )

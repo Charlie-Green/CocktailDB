@@ -1,8 +1,12 @@
 package by.vadim_churun.individual.cocktaildb.remote
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import by.vadim_churun.individual.cocktaildb.remote.client.CocktailClient
+import by.vadim_churun.individual.cocktaildb.remote.pojo.DrinkPojo
 import by.vadim_churun.individual.cocktaildb.remote.pojo.DrinksArrayPojo
 import by.vadim_churun.individual.cocktaildb.remote.service.DrinkService
+import java.net.URL
 
 
 object CocktailApi {
@@ -15,4 +19,17 @@ object CocktailApi {
 
     fun searchDrinksByFirstLetter(letter: Char): DrinksArrayPojo?
         = this.drinkService.searchByFirstLetter(letter.toString()).execute().body()
+
+    fun getDrinkThumb(host: String): Bitmap? {
+        // Retrofit doesn't help much at fetching binary data, so use this legacy approach.
+        var thumb: Bitmap? = null
+        try {
+            URL(host).openConnection().getInputStream().use { instream ->
+                thumb = BitmapFactory.decodeStream(instream)
+            }
+        } catch(exc: Exception) {
+            android.util.Log.v("getThumb", "${exc.javaClass.name}: ${exc.message}")
+        }
+        return thumb
+    }
 }

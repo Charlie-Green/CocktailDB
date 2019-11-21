@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">CocktailDB</string>
+    <string name="error">Error</string>
+    <string name="sync_failed">Failed to refresh data.</string>
+    <string name="sync_succeeded">Drinks list was refreshed.</string>
+    <string name="ok">OK</string>
 </resources>

@@ -8,5 +8,8 @@ class DrinkHeaderEntity(
     val ID: Int,
 
     @ColumnInfo(index = true)
-    val name: String
+    val name: String,
+
+    @ColumnInfo(name="thumb")
+    val thumbURL: String?
 )

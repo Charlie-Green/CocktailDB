@@ -4,4 +4,5 @@
     <color name="PurpleDark">#150015</color>
     <color name="Yellow">#e0e040</color>
     <color name="Orange">#d08000</color>
+    <color name="DrinkDefaultBack">#808080</color>
 </resources>

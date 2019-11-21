@@ -28,6 +28,9 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.0.2'
     implementation 'androidx.core:core-ktx:1.0.2'
 
+    def fab_version = "1.0.0"
+    implementation "com.google.android.material:material:$fab_version"
+
     def cardview_version = "1.0.0"
     implementation "androidx.cardview:cardview:$cardview_version"
 

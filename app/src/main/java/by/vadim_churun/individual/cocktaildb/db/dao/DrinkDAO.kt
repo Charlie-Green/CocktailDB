@@ -7,10 +7,7 @@ import by.vadim_churun.individual.cocktaildb.db.entity.*
 
 @Dao
 interface DrinkDAO {
-    @Query("select count(*) from Drinks where id=:id")
-    fun count(id: Int): Int
-
-    @Query("select id, name from Drinks order by dateModified desc")
+    @Query("select id, name, thumb from Drinks order by dateModified desc")
     fun getHeadersLD(): LiveData< List<DrinkHeaderEntity> >
 
     @Query("select * from Drinks where id=:id")

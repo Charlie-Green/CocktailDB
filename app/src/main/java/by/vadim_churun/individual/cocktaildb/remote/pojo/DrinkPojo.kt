@@ -15,6 +15,9 @@ class DrinkPojo(
 
     val dateModified: String?,
 
+    @SerializedName("strDrinkThumb")
+    val thumbURL: String?,
+
     @SerializedName("strIngredient1")
     val ingredient1: String,
 
