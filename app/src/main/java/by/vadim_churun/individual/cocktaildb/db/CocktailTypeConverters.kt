@@ -2,9 +2,10 @@ package by.vadim_churun.individual.cocktaildb.db
 
 import androidx.room.TypeConverter
 import by.vadim_churun.individual.cocktaildb.db.entity.*
+import java.util.*
 
 
-object CocktailTypeConverters {
+class CocktailTypeConverters {
     @TypeConverter
     fun stringToIngredientUnit(s: String): IngredientLotEntity.Unit {
         if(s.toLowerCase() != "oz")
@@ -17,4 +18,13 @@ object CocktailTypeConverters {
         = when(unit) {
             IngredientLotEntity.Unit.OZ -> "oz"
         }
+
+
+    @TypeConverter
+    fun calendarToLong(cal: Calendar): Long
+        = cal.timeInMillis
+
+    @TypeConverter
+    fun longToCalendar(long: Long): Calendar
+        = Calendar.getInstance().apply { timeInMillis = long }
 }

@@ -6,7 +6,7 @@ import androidx.room.Entity
 
 @Entity(
     tableName="IngredientLots",
-    primaryKeys = [ "drink, ingredient" ]
+    primaryKeys = [ "drink", "ingredient" ]
 ) class IngredientLotEntity(
     @ColumnInfo(name="drink")
     val drinkID: Int,

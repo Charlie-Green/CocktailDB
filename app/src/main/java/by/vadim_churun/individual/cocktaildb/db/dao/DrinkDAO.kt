@@ -14,7 +14,9 @@ interface DrinkDAO {
     fun get(id: Int): DrinkEntity
 
     @Query("select :drinkID as lot_drink, " +
-           "IngredientLots.ingredient as log_ingredient, " +
+           "IngredientLots.ingredient as lot_ingredient, " +
+           "IngredientLots.amount as lot_amount, " +
+           "IngredientLots.unit as lot_unit, " +
            "Ingredients.id as ingredient_id, " +
            "Ingredients.name as ingredient_name " +
            "from Ingredients inner join IngredientLots on Ingredients.id=IngredientLots.ingredient" )
