@@ -21,10 +21,12 @@ class CocktailTypeConverters {
 
 
     @TypeConverter
-    fun calendarToLong(cal: Calendar): Long
-        = cal.timeInMillis
+    fun calendarToLong(cal: Calendar?): Long?
+        = cal?.timeInMillis
 
     @TypeConverter
-    fun longToCalendar(long: Long): Calendar
-        = Calendar.getInstance().apply { timeInMillis = long }
+    fun longToCalendar(long: Long?): Calendar?
+        = long?.let {
+            Calendar.getInstance().apply { timeInMillis = long }
+        }
 }

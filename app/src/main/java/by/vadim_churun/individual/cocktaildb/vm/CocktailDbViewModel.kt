@@ -1,13 +1,12 @@
 package by.vadim_churun.individual.cocktaildb.vm
 
 import android.app.Application
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.*
 import by.vadim_churun.individual.cocktaildb.repo.CocktailRepository
 import by.vadim_churun.individual.cocktaildb.vm.represent.DrinksList
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 
 
 class CocktailDbViewModel(app: Application): AndroidViewModel(app) {
@@ -25,12 +24,34 @@ class CocktailDbViewModel(app: Application): AndroidViewModel(app) {
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////
+    // SYNC:
+
+    private fun sync()
+        = try {
+            val count = cocktailRepo.sync()
+            Log.v("Sync", "Drinks fetched: $count")
+        } catch(exc: Exception) {
+            Log.v("Sync", "${exc.javaClass.name}: ${exc.message}")
+        }
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////////
     // LIFECYCLE, FIELDS, HELP:
 
     private val app: Application
         get() = super.getApplication()
 
     private val cocktailRepo = CocktailRepository(this.app)
+
+
+    init {
+        viewModelScope.launch(Dispatchers.IO) {
+            while(true) {
+                sync()
+                delay(/*20000*/ 4000)
+            }
+        }
+    }
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////

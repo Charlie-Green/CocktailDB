@@ -7,6 +7,9 @@ import by.vadim_churun.individual.cocktaildb.db.entity.*
 
 @Dao
 interface DrinkDAO {
+    @Query("select count(*) from Drinks where id=:id")
+    fun count(id: Int): Int
+
     @Query("select id, name from Drinks order by dateModified desc")
     fun getHeadersLD(): LiveData< List<DrinkHeaderEntity> >
 
@@ -23,5 +26,5 @@ interface DrinkDAO {
     fun getIngredientsInRecipeLD(drinkID: Int): LiveData< List<IngredientInRecipeEntity> >
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun addOrUpdate(drink: DrinkEntity)
+    fun addOrUpdate(drink: List<DrinkEntity>)
 }
