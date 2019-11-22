@@ -1,6 +1,6 @@
 package by.vadim_churun.individual.cocktaildb.remote.pojo
 
 
-class IngredientsArrayPojo {
-
-}
+class IngredientsArrayPojo(
+    val ingredients: List<IngredientPojo>?
+)

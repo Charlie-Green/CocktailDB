@@ -5,13 +5,18 @@ import android.graphics.BitmapFactory
 import by.vadim_churun.individual.cocktaildb.remote.client.CocktailClient
 import by.vadim_churun.individual.cocktaildb.remote.pojo.DrinkPojo
 import by.vadim_churun.individual.cocktaildb.remote.pojo.DrinksArrayPojo
+import by.vadim_churun.individual.cocktaildb.remote.pojo.IngredientsArrayPojo
 import by.vadim_churun.individual.cocktaildb.remote.service.DrinkService
+import by.vadim_churun.individual.cocktaildb.remote.service.IngredientService
 import java.net.URL
 
 
 object CocktailApi {
     private val drinkService
         get() = CocktailClient.retrofit.create(DrinkService::class.java)
+
+    private val ingredientService
+        get() = CocktailClient.retrofit.create(IngredientService::class.java)
 
 
     fun searchDrinks(query: String): DrinksArrayPojo?
@@ -20,16 +25,17 @@ object CocktailApi {
     fun searchDrinksByFirstLetter(letter: Char): DrinksArrayPojo?
         = this.drinkService.searchByFirstLetter(letter.toString()).execute().body()
 
+    fun searchIngredients(query: String): IngredientsArrayPojo?
+        = this.ingredientService.search(query).execute().body()
+
     fun getDrinkThumb(host: String): Bitmap? {
         // Retrofit doesn't help much at fetching binary data, so use this legacy approach.
-        var thumb: Bitmap? = null
-        try {
+        return try {
             URL(host).openConnection().getInputStream().use { instream ->
-                thumb = BitmapFactory.decodeStream(instream)
+                BitmapFactory.decodeStream(instream)
             }
         } catch(exc: Exception) {
-            android.util.Log.v("getThumb", "${exc.javaClass.name}: ${exc.message}")
+            null
         }
-        return thumb
     }
 }
