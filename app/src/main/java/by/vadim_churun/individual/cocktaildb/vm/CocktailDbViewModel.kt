@@ -4,7 +4,6 @@ import android.app.Application
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.*
-import by.vadim_churun.individual.cocktaildb.R
 import by.vadim_churun.individual.cocktaildb.repo.CocktailRepository
 import by.vadim_churun.individual.cocktaildb.vm.represent.*
 import by.vadim_churun.individual.cocktaildb.vm.state.SyncState
@@ -29,35 +28,50 @@ class CocktailDbViewModel(app: Application): AndroidViewModel(app) {
     // SYNC:
 
     private var lastSyncMillis = 0L
+    private val SYNC_STATE_LOCK = Any()
 
     private val syncStateMLD = MutableLiveData<SyncState>()
     val syncStateLD: LiveData<SyncState>
         get() = syncStateMLD
 
 
-    private fun sync(minIntervalMillis: Long, notifyAboutResult: Boolean = false) {
-        val now = System.currentTimeMillis()
-        if(now - lastSyncMillis < minIntervalMillis)
-            return
+    /** @return whether the state was set successfully. **/
+    private fun setSyncState(state: SyncState): Boolean {
+        synchronized(SYNC_STATE_LOCK) {
+            if(state == SyncState.IN_PROGRESS && syncStateMLD.value == SyncState.IN_PROGRESS)
+                return false
+            syncStateMLD.postValue(state)
+            return true
+        }
+    }
 
-        syncStateMLD.postValue(SyncState.IN_PROGRESS)
+    /** @return whether a sync did occur. **/
+    private fun sync(minIntervalMillis: Long, notifyAboutResult: Boolean = false): Boolean {
+        val now = System.currentTimeMillis()
+        if(now - lastSyncMillis < minIntervalMillis ||
+            !setSyncState(SyncState.IN_PROGRESS) )
+            return false
         lastSyncMillis = now
+
         try {
             cocktailRepo.sync()
-            syncStateMLD.postValue(
+            setSyncState(
                 if(notifyAboutResult) SyncState.SUCCEEDED else SyncState.NO_SYNC
             )
         } catch(exc: Exception) {
             Log.v("Sync", "${exc.javaClass.name}: ${exc.message}")
-            syncStateMLD.postValue(
+            setSyncState(
                 if(notifyAboutResult) SyncState.FAILED else SyncState.NO_SYNC
             )
         }
+
+        return true
     }
 
     fun forceSync() {
         viewModelScope.launch(Dispatchers.IO) {
-            sync(0L, notifyAboutResult = true)
+            if(!sync(0L, notifyAboutResult = true))
+                throw IllegalStateException("Sync is already in progress")
         }
     }
 
@@ -94,7 +108,6 @@ class CocktailDbViewModel(app: Application): AndroidViewModel(app) {
                 value = withContext(Dispatchers.Default) { DrinksList(headers) }
             }
         }
-        // TODO: Add source for images.
     }
 
     private val drinkThumbMLD = MutableLiveData<DrinkThumb>()
@@ -116,4 +129,15 @@ class CocktailDbViewModel(app: Application): AndroidViewModel(app) {
             }
         }
     }
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////////
+    // INGREDIENTS:
+
+    private val recipeMLD = MutableLiveData<ItemizedRecipe>()
+
+    suspend fun getRecipe(drinkID: Int)
+        = withContext(Dispatchers.IO) {
+            ItemizedRecipe.fromEntity(cocktailRepo.getRecipe(drinkID))
+        }
 }

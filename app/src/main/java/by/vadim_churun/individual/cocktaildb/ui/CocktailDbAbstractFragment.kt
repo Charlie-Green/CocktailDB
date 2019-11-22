@@ -7,7 +7,7 @@ import androidx.fragment.app.DialogFragment
 import by.vadim_churun.individual.cocktaildb.vm.CocktailDbViewModel
 
 
-abstract class CocktailAbstractFragment(private val layout: Int): DialogFragment() {
+abstract class CocktailDbAbstractFragment(private val layout: Int): DialogFragment() {
     private var vm: CocktailDbViewModel? = null
 
     protected val viewModel: CocktailDbViewModel

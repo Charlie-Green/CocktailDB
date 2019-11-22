@@ -3,21 +3,30 @@ package by.vadim_churun.individual.cocktaildb.repo
 import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
-import by.vadim_churun.individual.cocktaildb.db.entity.DrinkEntity
-import by.vadim_churun.individual.cocktaildb.db.entity.IngredientEntity
-import by.vadim_churun.individual.cocktaildb.db.entity.IngredientLotEntity
+import by.vadim_churun.individual.cocktaildb.db.entity.*
 import by.vadim_churun.individual.cocktaildb.remote.CocktailApi
-import by.vadim_churun.individual.cocktaildb.repo.exception.UnknownMeasureUnitException
 import java.io.IOException
 
 
 class CocktailRepository(appContext: Context): CocktailAbstractRepository(appContext) {
+    /////////////////////////////////////////////////////////////////////////////////////////
+    // WRAPPER:
+
     val drinkHeadersLD
         get() = super.drinkDAO.getHeadersLD()
 
     fun getThumb(url: String): Bitmap?
         = CocktailApi.getDrinkThumb(url)
 
+    fun getRecipe(drinkID: Int)
+        = RecipeEntity(
+            super.drinkDAO.get(drinkID),
+            super.ingredientDAO.getIngredientsInRecipe(drinkID)
+        )
+
+
+    /////////////////////////////////////////////////////////////////////////////////////////
+    // HELP:
 
     private fun fetchIngredient(ingredientName: String): IngredientEntity {
         val ingredientsPojo = CocktailApi.searchIngredients(ingredientName)
@@ -29,37 +38,52 @@ class CocktailRepository(appContext: Context): CocktailAbstractRepository(appCon
     }
 
 
+    /////////////////////////////////////////////////////////////////////////////////////////
+    // LOGIC:
+
     fun sync() {
         val knownIngredientNames = HashSet<String>()
         for(ingredientName in super.ingredientDAO.getNames()) {
             knownIngredientNames.add(ingredientName)
         }
 
+        var quickFlushFlag = (super.drinkDAO.count() < 16)
+        val allDrinks = mutableListOf<DrinkEntity>()
         val newIngredients = mutableListOf<IngredientEntity>()
         val allIngredientLots = mutableListOf<IngredientLotEntity>()
+
         fun getOrFetchIngredient(ingredientName: String): IngredientEntity {
             if(knownIngredientNames.contains(ingredientName))
                 return super.ingredientDAO.getByName(ingredientName)[0]
-            return fetchIngredient(ingredientName).also { newIngredients.add(it) }
+            return try {
+                fetchIngredient(ingredientName).also { newIngredients.add(it) }
+            } catch(exc: Exception) {
+                Log.e("Sync", "No such ingredient \"$ingredientName\"")
+
+                // Information about some of ingredients is missing on the server.
+                // This is to be solved by asking the API's developer to fulfill the missing data
+                // or making IngredientLots.ingredient a nullable field.
+                // But for now, use this fake ingredient.
+                IngredientEntity(123456789, "[Unknown ingredient]")
+            }
         }
         fun parseIngredientLot(
             drinkID: Int,
             ingredientName: String?,
-            strMeasure: String?
+            measure: String?
         ): IngredientLotEntity? {
-            if(ingredientName == null || strMeasure == null)
+            if(ingredientName == null || measure == null)
                 return null
-            return try {
-                RepoTransformations.parseIngredientLot(
-                    drinkID, getOrFetchIngredient(ingredientName).ID, strMeasure )
-                    .also { allIngredientLots.add(it) }
-            } catch(exc: UnknownMeasureUnitException) {
-                Log.e("Sync", "Unknown measure unit \"${exc.representation}\"")
-                null
-            }
+            return IngredientLotEntity(
+                drinkID, getOrFetchIngredient(ingredientName).ID, measure
+            ).also { allIngredientLots.add(it) }
+        }
+        fun flushData() {
+            super.drinkDAO.addOrUpdate(allDrinks)
+            super.ingredientDAO.addOrUpdate(newIngredients)
+            super.ingredientDAO.addOrUpdateILots(allIngredientLots)
         }
 
-        val allDrinks = mutableListOf<DrinkEntity>()
         for(letter in 'a'..'z') {
             val data = CocktailApi.searchDrinksByFirstLetter(letter)
                 ?: throw IOException("Failed to fetch drinks for letter '$letter': empty response")
@@ -84,11 +108,17 @@ class CocktailRepository(appContext: Context): CocktailAbstractRepository(appCon
                 parseIngredientLot(drinkPojo.ID, drinkPojo.ingredient14, drinkPojo.measure14) ?: continue
                 parseIngredientLot(drinkPojo.ID, drinkPojo.ingredient15, drinkPojo.measure15)
             }
+
+            if(quickFlushFlag && newIngredients.size >= 16) {
+                // Flush a bit of data right now so that the user doesn't stuck with an empty screen.
+                flushData()
+                allDrinks.clear()
+                allIngredientLots.clear()
+                newIngredients.clear()
+                quickFlushFlag = false
+            }
         }
 
-        Log.v("Sync", "Total drinks: ${allDrinks.size}. New ingredients: ${newIngredients.size}" )
-        super.drinkDAO.addOrUpdate(allDrinks)
-        super.ingredientDAO.addOrUpdate(newIngredients)
-        super.ingredientDAO.addOrUpdateILots(allIngredientLots)
+        flushData()
     }
 }

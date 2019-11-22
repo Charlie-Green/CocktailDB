@@ -4,16 +4,29 @@ import android.graphics.Bitmap
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.View
+import androidx.core.view.isVisible
+import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import by.vadim_churun.individual.cocktaildb.R
-import by.vadim_churun.individual.cocktaildb.ui.CocktailAbstractFragment
+import by.vadim_churun.individual.cocktaildb.ui.CocktailDbAbstractFragment
 import by.vadim_churun.individual.cocktaildb.vm.represent.ItemizedRecipe
 import kotlinx.android.synthetic.main.recipe_fragment.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 
-class RecipeFragment: CocktailAbstractFragment(R.layout.recipe_fragment) {
+class RecipeFragment: CocktailDbAbstractFragment(R.layout.recipe_fragment) {
+    companion object {
+        const val ARG_DRINK_ID = "drinkID"
+    }
+
     private fun applyRecipe(recipe: ItemizedRecipe) {
-        tvIngredients.text = recipe.ingredientsList
-        tvRecipe.text = recipe.instructions
+        tvName.text = recipe.drink.name
+        tvDateModified.text = super.getString(R.string.date_modified, recipe.dateModified)
+        frltIngredients.isVisible = (recipe.ingredientsList != null)
+        recipe.ingredientsList?.also { tvIngredients.text = it }
+        tvRecipe.text = recipe.drink.recipe
+            ?: super.getString(R.string.recipe_unknown)
     }
 
     private fun applyThumb(thumb: Bitmap) {
@@ -28,8 +41,18 @@ class RecipeFragment: CocktailAbstractFragment(R.layout.recipe_fragment) {
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        val drinkID = TODO("Get as an argument")
-        // TODO: Observe the ItemizedRecipe LiveData.
-        // TODO: Observe the DrinkThumb LiveData.
+        if(super.getArguments()?.containsKey(ARG_DRINK_ID) != true)
+            throw IllegalArgumentException("Missing argument ARG_DRINK_ID")
+        val drinkID = super.getArguments()!!.getInt(ARG_DRINK_ID)
+
+        val owner = super.getViewLifecycleOwner()
+        super.viewModel.drinkThumbLD.observe(owner, Observer { thumb ->
+            if(thumb?.drinkID == drinkID)
+                applyThumb(thumb.image)
+        })
+
+        lifecycleScope.launch(Dispatchers.Main) {
+            applyRecipe( super.viewModel.getRecipe(drinkID) )
+        }
     }
 }

@@ -3,10 +3,13 @@ package by.vadim_churun.individual.cocktaildb.ui.drink
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.Context
+import android.os.Bundle
 import android.view.*
 import androidx.core.content.ContextCompat
+import androidx.navigation.NavController
 import androidx.recyclerview.widget.RecyclerView
 import by.vadim_churun.individual.cocktaildb.R
+import by.vadim_churun.individual.cocktaildb.ui.recipe.RecipeFragment
 import by.vadim_churun.individual.cocktaildb.vm.represent.*
 import kotlinx.android.synthetic.main.drinks_listitem.view.*
 
@@ -24,6 +27,7 @@ private fun View.fade(fadeIn: Boolean) {
 class DrinksAdapter(
     val context: Context,
     val list: DrinksList,
+    val navController: NavController,
     private val requestThumb: (id: Int) -> Unit
 ): RecyclerView.Adapter<DrinksAdapter.DrinkViewHolder>() {
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -38,7 +42,7 @@ class DrinksAdapter(
 
         override fun onSingleTapUp(e: MotionEvent?): Boolean {
             holder.imgvThumb.performClick()
-            return false
+            return true
         }
     }
 
@@ -95,11 +99,16 @@ class DrinksAdapter(
 
         val detector = GestureDetector( context, HighlightOrClickListener(holder) )
         holder.imgvThumb.setOnTouchListener { _, event ->
-            if(event.actionMasked != MotionEvent.ACTION_UP &&
-                event.actionMasked != MotionEvent.ACTION_CANCEL )
-                return@setOnTouchListener detector.onTouchEvent(event)
-            holder.imgvNameHighlight.fade(false)
-            return@setOnTouchListener true
+            if(event.actionMasked == MotionEvent.ACTION_UP ||
+                event.actionMasked == MotionEvent.ACTION_CANCEL )
+                holder.imgvNameHighlight.fade(false)
+            return@setOnTouchListener detector.onTouchEvent(event)
+        }
+        holder.imgvThumb.setOnClickListener {
+            val args = Bundle().apply {
+                putInt(RecipeFragment.ARG_DRINK_ID, drink.ID)
+            }
+            navController.navigate(R.id.actViewDrinkRecipe, args)
         }
     }
 }

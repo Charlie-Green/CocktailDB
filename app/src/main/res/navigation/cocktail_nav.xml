@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/cocktail_nav"
+        app:startDestination="@id/fragmDrinks" >
+
+    <fragment
+            android:id="@+id/fragmDrinks"
+            android:name="by.vadim_churun.individual.cocktaildb.ui.drink.DrinksFragment" >
+
+        <action
+                android:id="@+id/actViewDrinkRecipe"
+                app:destination="@id/fragmRecipe" />
+
+    </fragment>
+
+    <fragment
+            android:id="@+id/fragmRecipe"
+            android:name="by.vadim_churun.individual.cocktaildb.ui.recipe.RecipeFragment" />
+
+</navigation>

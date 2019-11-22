@@ -12,7 +12,7 @@ import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.main_activity.*
 
 
-class MainActivity: AppCompatActivity() {
+class CocktailDbMainActivity: AppCompatActivity() {
     private fun notifySyncSucceeded() {
         Snackbar.make(cdltRoot, R.string.sync_succeeded, 2000).show()
     }
@@ -28,8 +28,8 @@ class MainActivity: AppCompatActivity() {
                 notifySyncSucceeded()
         })
 
-        val params = fragmDrinks.view!!.layoutParams as CoordinatorLayout.LayoutParams
+        val params = navHost.view!!.layoutParams as CoordinatorLayout.LayoutParams
         params.behavior = PopUpOnSnackbarBehaviour(this, null)
-        fragmDrinks.view!!.layoutParams = params
+        navHost.view!!.layoutParams = params
     }
 }

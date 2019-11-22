@@ -3,6 +3,7 @@
     <string name="date_modified">Last modified: %s</string>
     <string name="error">Error</string>
     <string name="recipe_ingreds_head">What You\'ll Need:</string>
+    <string name="recipe_unknown">Recipe is unknown.</string>
     <string name="sync_failed">Failed to refresh data.</string>
     <string name="sync_succeeded">Drinks list was refreshed.</string>
     <string name="ok">OK</string>

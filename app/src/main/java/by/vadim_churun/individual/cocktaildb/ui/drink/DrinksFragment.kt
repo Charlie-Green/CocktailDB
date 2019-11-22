@@ -6,20 +6,21 @@ import android.util.DisplayMetrics
 import android.view.View
 import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import by.vadim_churun.individual.cocktaildb.R
-import by.vadim_churun.individual.cocktaildb.ui.CocktailAbstractFragment
+import by.vadim_churun.individual.cocktaildb.ui.CocktailDbAbstractFragment
 import by.vadim_churun.individual.cocktaildb.vm.represent.*
 import by.vadim_churun.individual.cocktaildb.vm.state.SyncState
 import kotlinx.android.synthetic.main.drinks_fragment.*
 
 
-class DrinksFragment: CocktailAbstractFragment(R.layout.drinks_fragment) {
+class DrinksFragment: CocktailDbAbstractFragment(R.layout.drinks_fragment) {
     //////////////////////////////////////////////////////////////////////////////////////////////
     // UI:
 
     private fun applyDrinks(drinks: DrinksList) {
-        val newAdapter = DrinksAdapter(super.requireContext(), drinks) { id ->
+        val newAdapter = DrinksAdapter(super.requireContext(), drinks, findNavController()) { id ->
             super.viewModel.requestThumb(id)
         }
         val layman = recvCocktails.layoutManager as GridLayoutManager?
@@ -68,6 +69,7 @@ class DrinksFragment: CocktailAbstractFragment(R.layout.drinks_fragment) {
         }
         vm.syncStateLD.observe(owner, Observer { state ->
             prBar.isVisible = (state == SyncState.IN_PROGRESS)
+            fabSync.isVisible = !prBar.isVisible
             if(state == SyncState.FAILED) {
                 notifySyncFailed()
                 vm.clearSyncState()
