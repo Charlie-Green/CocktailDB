@@ -29,12 +29,20 @@ class CocktailRepository(appContext: Context): CocktailAbstractRepository(appCon
     // HELP:
 
     private fun fetchIngredient(ingredientName: String): IngredientEntity {
+        fun throwNoIngredientFound(): Nothing
+            = throw IllegalArgumentException("No ingredient named \"$ingredientName\" found")
+
         val ingredientsPojo = CocktailApi.searchIngredients(ingredientName)
             ?: throw IOException("Can't fetch a list of ingredients")
         val ingredients = ingredientsPojo.ingredients
         if(ingredients == null || ingredients.isEmpty())
-            throw IllegalArgumentException("No ingredient named \"$ingredientName\" found")
-        return RepoTransformations.ingredientPojoToEntity(ingredients[0])
+            throwNoIngredientFound()
+
+        val nameLower = ingredientName.toLowerCase()
+        val ingr = ingredients.find { pojo ->
+            pojo.name.toLowerCase() == nameLower
+        } ?: throwNoIngredientFound()
+        return RepoTransformations.ingredientPojoToEntity(ingr)
     }
 
 
@@ -44,41 +52,43 @@ class CocktailRepository(appContext: Context): CocktailAbstractRepository(appCon
     fun sync() {
         val knownIngredientNames = HashSet<String>()
         for(ingredientName in super.ingredientDAO.getNames()) {
-            knownIngredientNames.add(ingredientName)
+            knownIngredientNames.add(ingredientName.toLowerCase())
         }
 
         var quickFlushFlag = (super.drinkDAO.count() < 16)
         val allDrinks = mutableListOf<DrinkEntity>()
+        val deletedDrinks = mutableListOf<DrinkEntity>()
         val newIngredients = mutableListOf<IngredientEntity>()
         val allIngredientLots = mutableListOf<IngredientLotEntity>()
 
-        fun getOrFetchIngredient(ingredientName: String): IngredientEntity {
-            if(knownIngredientNames.contains(ingredientName))
+        fun getOrFetchIngredient(ingredientName: String): IngredientEntity? {
+            if(knownIngredientNames.contains(ingredientName.toLowerCase()))
                 return super.ingredientDAO.getByName(ingredientName)[0]
             return try {
                 fetchIngredient(ingredientName).also { newIngredients.add(it) }
             } catch(exc: Exception) {
                 Log.e("Sync", "No such ingredient \"$ingredientName\"")
-
-                // Information about some of ingredients is missing on the server.
-                // This is to be solved by asking the API's developer to fulfill the missing data
-                // or making IngredientLots.ingredient a nullable field.
-                // But for now, use this fake ingredient.
-                IngredientEntity(123456789, "[Unknown ingredient]")
+                null
             }
         }
+        /** @return false if no ingredient with such name was found. If such IngredientLot
+          * is added to the database, it will imply fail of forward key constraint (no such ingredient).
+          * If it's not, the recipe will be uncompleted (not all ingredients will be mentioned).
+          * Thus, if this method returns false, the whole drink should be deleted. **/
         fun parseIngredientLot(
             drinkID: Int,
             ingredientName: String?,
             measure: String?
-        ): IngredientLotEntity? {
+        ): Boolean {
             if(ingredientName == null || measure == null)
-                return null
-            return IngredientLotEntity(
-                drinkID, getOrFetchIngredient(ingredientName).ID, measure
-            ).also { allIngredientLots.add(it) }
+                return true
+            val ingredient = getOrFetchIngredient(ingredientName) ?: return false
+            allIngredientLots.add(
+                IngredientLotEntity(drinkID, ingredient.ID, measure) )
+            return  true
         }
         fun flushData() {
+            super.drinkDAO.delete(deletedDrinks)
             super.drinkDAO.addOrUpdate(allDrinks)
             super.ingredientDAO.addOrUpdate(newIngredients)
             super.ingredientDAO.addOrUpdateILots(allIngredientLots)
@@ -90,31 +100,36 @@ class CocktailRepository(appContext: Context): CocktailAbstractRepository(appCon
             val curDrinks = data.drinks ?: continue
             for(j in 0 until curDrinks.size) {
                 val drinkPojo = data.drinks[j]
-                allDrinks.add( RepoTransformations.drinkPojoToEntity(drinkPojo) )
-                
-                parseIngredientLot(drinkPojo.ID, drinkPojo.ingredient1,  drinkPojo.measure1)  ?: continue
-                parseIngredientLot(drinkPojo.ID, drinkPojo.ingredient2,  drinkPojo.measure2)  ?: continue
-                parseIngredientLot(drinkPojo.ID, drinkPojo.ingredient3,  drinkPojo.measure3)  ?: continue
-                parseIngredientLot(drinkPojo.ID, drinkPojo.ingredient4,  drinkPojo.measure4)  ?: continue
-                parseIngredientLot(drinkPojo.ID, drinkPojo.ingredient5,  drinkPojo.measure5)  ?: continue
-                parseIngredientLot(drinkPojo.ID, drinkPojo.ingredient6,  drinkPojo.measure6)  ?: continue
-                parseIngredientLot(drinkPojo.ID, drinkPojo.ingredient7,  drinkPojo.measure7)  ?: continue
-                parseIngredientLot(drinkPojo.ID, drinkPojo.ingredient8,  drinkPojo.measure8)  ?: continue
-                parseIngredientLot(drinkPojo.ID, drinkPojo.ingredient9,  drinkPojo.measure9)  ?: continue
-                parseIngredientLot(drinkPojo.ID, drinkPojo.ingredient10, drinkPojo.measure10) ?: continue
-                parseIngredientLot(drinkPojo.ID, drinkPojo.ingredient11, drinkPojo.measure11) ?: continue
-                parseIngredientLot(drinkPojo.ID, drinkPojo.ingredient12, drinkPojo.measure12) ?: continue
-                parseIngredientLot(drinkPojo.ID, drinkPojo.ingredient13, drinkPojo.measure13) ?: continue
-                parseIngredientLot(drinkPojo.ID, drinkPojo.ingredient14, drinkPojo.measure14) ?: continue
-                parseIngredientLot(drinkPojo.ID, drinkPojo.ingredient15, drinkPojo.measure15)
+
+                var success =
+                    parseIngredientLot(drinkPojo.ID, drinkPojo.ingredient1,  drinkPojo.measure1)  &&
+                    parseIngredientLot(drinkPojo.ID, drinkPojo.ingredient2,  drinkPojo.measure2)  &&
+                    parseIngredientLot(drinkPojo.ID, drinkPojo.ingredient3,  drinkPojo.measure3)  &&
+                    parseIngredientLot(drinkPojo.ID, drinkPojo.ingredient4,  drinkPojo.measure4)  &&
+                    parseIngredientLot(drinkPojo.ID, drinkPojo.ingredient5,  drinkPojo.measure5)  &&
+                    parseIngredientLot(drinkPojo.ID, drinkPojo.ingredient6,  drinkPojo.measure6)  &&
+                    parseIngredientLot(drinkPojo.ID, drinkPojo.ingredient7,  drinkPojo.measure7)  &&
+                    parseIngredientLot(drinkPojo.ID, drinkPojo.ingredient8,  drinkPojo.measure8)  &&
+                    parseIngredientLot(drinkPojo.ID, drinkPojo.ingredient9,  drinkPojo.measure9)  &&
+                    parseIngredientLot(drinkPojo.ID, drinkPojo.ingredient10, drinkPojo.measure10) &&
+                    parseIngredientLot(drinkPojo.ID, drinkPojo.ingredient11, drinkPojo.measure11) &&
+                    parseIngredientLot(drinkPojo.ID, drinkPojo.ingredient12, drinkPojo.measure12) &&
+                    parseIngredientLot(drinkPojo.ID, drinkPojo.ingredient13, drinkPojo.measure13) &&
+                    parseIngredientLot(drinkPojo.ID, drinkPojo.ingredient14, drinkPojo.measure14) &&
+                    parseIngredientLot(drinkPojo.ID, drinkPojo.ingredient15, drinkPojo.measure15)
+
+                val drinkEntity = RepoTransformations.drinkPojoToEntity(drinkPojo)
+                if(success)
+                    allDrinks.add(drinkEntity)
+                else
+                    deletedDrinks.add(drinkEntity)
             }
 
             if(quickFlushFlag && newIngredients.size >= 16) {
                 // Flush a bit of data right now so that the user doesn't stuck with an empty screen.
                 flushData()
-                allDrinks.clear()
-                allIngredientLots.clear()
-                newIngredients.clear()
+                deletedDrinks.clear(); allDrinks.clear()
+                allIngredientLots.clear(); newIngredients.clear()
                 quickFlushFlag = false
             }
         }

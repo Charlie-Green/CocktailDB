@@ -18,4 +18,7 @@ interface DrinkDAO {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun addOrUpdate(drinks: List<DrinkEntity>)
+
+    @Delete
+    fun delete(drinks: List<DrinkEntity>): Int
 }

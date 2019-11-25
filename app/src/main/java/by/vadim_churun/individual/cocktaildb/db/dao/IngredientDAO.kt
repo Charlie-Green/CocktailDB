@@ -1,6 +1,5 @@
 package by.vadim_churun.individual.cocktaildb.db.dao
 
-import androidx.lifecycle.LiveData
 import androidx.room.*
 import by.vadim_churun.individual.cocktaildb.db.entity.*
 
@@ -10,7 +9,7 @@ interface IngredientDAO {
     @Query("select name from Ingredients")
     fun getNames(): List<String>
 
-    @Query("select * from Ingredients where name=:name")
+    @Query("select * from Ingredients where lower(name)=lower(:name)")
     fun getByName(name: String): List<IngredientEntity>
 
     @Query("select :drinkID as lot_drink, " +

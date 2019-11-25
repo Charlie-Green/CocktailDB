@@ -70,8 +70,7 @@ class CocktailDbViewModel(app: Application): AndroidViewModel(app) {
 
     fun forceSync() {
         viewModelScope.launch(Dispatchers.IO) {
-            if(!sync(0L, notifyAboutResult = true))
-                throw IllegalStateException("Sync is already in progress")
+            sync(0L, notifyAboutResult = true)
         }
     }
 
@@ -92,7 +91,7 @@ class CocktailDbViewModel(app: Application): AndroidViewModel(app) {
     init {
         viewModelScope.launch(Dispatchers.IO) {
             while(true) {
-                sync(40000L)
+                sync(180000L)
                 delay(4000L)
             }
         }
