@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.*
 import by.vadim_churun.individual.cocktaildb.repo.CocktailRepository
+import by.vadim_churun.individual.cocktaildb.vm.launch.CocktailDbAppLoads
 import by.vadim_churun.individual.cocktaildb.vm.represent.*
 import by.vadim_churun.individual.cocktaildb.vm.state.SyncState
 import kotlinx.coroutines.*
@@ -77,6 +78,16 @@ class CocktailDbViewModel(app: Application): AndroidViewModel(app) {
     fun clearSyncState() {
         syncStateMLD.value = SyncState.NO_SYNC
     }
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////////
+    // APP LOAD:
+
+    val isLaunchInitial: Boolean
+        get() = CocktailDbAppLoads.isLaunchInitial(this.app)
+
+    fun unsetInitialLoad()
+        = CocktailDbAppLoads.unsetInitialLaunch(this.app)
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////

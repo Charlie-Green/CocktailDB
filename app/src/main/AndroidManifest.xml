@@ -13,7 +13,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppThemeDefault">
 
-        <activity android:name=".ui.CocktailDbMainActivity">
+        <activity android:name=".ui.CocktailDbMainActivity"
+                  android:launchMode="singleTop" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
