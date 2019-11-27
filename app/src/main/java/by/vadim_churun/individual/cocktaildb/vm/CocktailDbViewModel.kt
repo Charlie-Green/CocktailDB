@@ -4,10 +4,11 @@ import android.app.Application
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.*
+import by.vadim_churun.individual.cocktaildb.db.entity.DrinkHeaderEntity
 import by.vadim_churun.individual.cocktaildb.repo.CocktailRepository
 import by.vadim_churun.individual.cocktaildb.vm.launch.CocktailDbAppLoads
 import by.vadim_churun.individual.cocktaildb.vm.represent.*
-import by.vadim_churun.individual.cocktaildb.vm.state.SyncState
+import by.vadim_churun.individual.cocktaildb.vm.state.*
 import kotlinx.coroutines.*
 
 
@@ -112,18 +113,70 @@ class CocktailDbViewModel(app: Application): AndroidViewModel(app) {
     ////////////////////////////////////////////////////////////////////////////////////////////
     // DRINKS:
 
+    private var allDrinks: List<DrinkHeaderEntity>? = null
+    private val drinksSearchQueryMLD = MutableLiveData<CharSequence>().apply {
+        value = ""
+    }
+
+    private suspend fun createDrinksList(): DrinksList? {
+        val drinks = allDrinks ?: return null
+        return drinksSearchQueryMLD.value?.let {
+            // There is a search query => need to filter drinks.
+            drinksSearchStateMLD.value = SearchState.IN_PROGRESS
+            val result = withContext(Dispatchers.Default) {
+                DrinksList( cocktailRepo.filterDrinks(drinks, it) )
+            }
+            drinksSearchStateMLD.value = SearchState.ACTIVE
+            result
+        } ?:
+            // No search query => return the full list.
+            DrinksList(drinks).also {
+                drinksSearchStateMLD.value = SearchState.ACTIVE
+            }
+    }
+
     private val drinksListMLD = MediatorLiveData<DrinksList>().apply {
+        // When a new full list of drinks arrives:
         addSource(cocktailRepo.drinkHeadersLD) { headers ->
             viewModelScope.launch(Dispatchers.Main) {
-                value = withContext(Dispatchers.Default) { DrinksList(headers) }
+                allDrinks = headers
+                value = createDrinksList()
+            }
+        }
+
+        // When a new search query arrives:
+        addSource(drinksSearchQueryMLD) { query ->
+            viewModelScope.launch(Dispatchers.Main) {
+                value = createDrinksList()
             }
         }
     }
 
-    private val drinkThumbMLD = MutableLiveData<DrinkThumb>()
+
+    private val drinksSearchStateMLD = MutableLiveData<SearchState>().apply {
+        value = SearchState.INACTIVE
+    }
+
+    val drinksSearchStateLD
+        get() = drinksSearchStateMLD
+
+
+    fun searchDrinks(query: CharSequence) {
+        drinksSearchQueryMLD.value = query
+    }
+
+    fun stopSearchDrinks() {
+        drinksSearchQueryMLD.value = null
+    }
 
     val drinksListLD: LiveData<DrinksList>
         get() = drinksListMLD
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////////
+    // DRINK THUMBS:
+
+    private val drinkThumbMLD = MutableLiveData<DrinkThumb>()
 
     val drinkThumbLD: LiveData<DrinkThumb>
         get() = drinkThumbMLD

@@ -6,6 +6,8 @@ import android.util.Log
 import by.vadim_churun.individual.cocktaildb.db.entity.*
 import by.vadim_churun.individual.cocktaildb.remote.CocktailApi
 import java.io.IOException
+import java.util.*
+import kotlin.collections.HashSet
 
 
 class CocktailRepository(appContext: Context): CocktailAbstractRepository(appContext) {
@@ -47,7 +49,7 @@ class CocktailRepository(appContext: Context): CocktailAbstractRepository(appCon
 
 
     /////////////////////////////////////////////////////////////////////////////////////////
-    // LOGIC:
+    // SYNC:
 
     fun sync() {
         val knownIngredientNames = HashSet<String>()
@@ -135,5 +137,17 @@ class CocktailRepository(appContext: Context): CocktailAbstractRepository(appCon
         }
 
         flushData()
+    }
+
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    // SEARCH:
+
+    fun filterDrinks(list: List<DrinkHeaderEntity>, query: CharSequence):
+    List<DrinkHeaderEntity> {
+        val subname = query.toString().toLowerCase(Locale.getDefault())
+        return list.filter { header ->
+            header.name.toLowerCase(Locale.getDefault()).contains(subname)
+        }
     }
 }

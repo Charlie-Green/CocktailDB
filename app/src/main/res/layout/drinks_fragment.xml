@@ -16,6 +16,7 @@
             android:layout_height="@dimen/progress_bar_size"
             android:layout_gravity="center" />
 
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fabSync"
             android:layout_width="wrap_content"
@@ -33,5 +34,17 @@
             android:layout_gravity="bottom|end"
             android:layout_margin="16dp"
             android:visibility="gone" />
+
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabSearch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="74dp"
+            android:src="@drawable/ic_search"
+            android:tint="?android:colorBackground"
+            app:fabCustomSize="42dp" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -13,9 +13,11 @@
         TheCocktailDB uses this to welcome you to the fascinating world of drinks.
     </string>
     <string name="initial_load_notifchannel_name">Initial Load</string>
+    <string name="ok">OK</string>
     <string name="recipe_ingreds_head">What You\'ll Need:</string>
     <string name="recipe_unknown">Recipe is unknown.</string>
+    <string name="search_drinks">Search drinks:</string>
     <string name="sync_failed">Failed to refresh data.</string>
     <string name="sync_succeeded">Drinks list was refreshed.</string>
-    <string name="ok">OK</string>
+    <string name="type_drink_name">Type a drink name.</string>
 </resources>
