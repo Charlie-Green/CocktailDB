@@ -3,14 +3,14 @@ package by.vadim_churun.individual.cocktaildb.ui.drink
 import android.app.AlertDialog
 import android.os.Bundle
 import android.util.DisplayMetrics
+import android.view.Surface
 import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
-import androidx.appcompat.widget.SearchView
-import androidx.appcompat.widget.Toolbar
+import androidx.appcompat.widget.*
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.isVisible
-import androidx.lifecycle.Observer
-import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.*
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import by.vadim_churun.individual.cocktaildb.R
@@ -18,8 +18,7 @@ import by.vadim_churun.individual.cocktaildb.ui.CocktailDbAbstractFragment
 import by.vadim_churun.individual.cocktaildb.vm.represent.*
 import by.vadim_churun.individual.cocktaildb.vm.state.*
 import kotlinx.android.synthetic.main.drinks_fragment.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 
 
 class DrinksFragment: CocktailDbAbstractFragment(R.layout.drinks_fragment) {
@@ -74,16 +73,15 @@ class DrinksFragment: CocktailDbAbstractFragment(R.layout.drinks_fragment) {
     }
 
 
+    //////////////////////////////////////////////////////////////////////////////////////////////
+    // SEARCH VIEW:
+
     private fun setSearchViewDimensions(width: Int, height: Int) {
         vSearch.layoutParams = (vSearch.layoutParams as Toolbar.LayoutParams?)?.apply {
             this.width = width
             this.height = height
         } ?: Toolbar.LayoutParams(width, height)
     }
-
-
-    //////////////////////////////////////////////////////////////////////////////////////////////
-    // SEARCH VIEW:
 
     private fun setSeachViewListeners() {
         vSearch.setOnQueryTextListener(object: SearchView.OnQueryTextListener {
@@ -113,10 +111,35 @@ class DrinksFragment: CocktailDbAbstractFragment(R.layout.drinks_fragment) {
 
 
     //////////////////////////////////////////////////////////////////////////////////////////////
+    // SYNC BUTTON:
+
+    private fun setSyncFabMargins(bottom: Int, right: Int) {
+        val params = (fabSync.layoutParams as CoordinatorLayout.LayoutParams?)
+            ?: CoordinatorLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
+        params.bottomMargin = bottom
+        params.rightMargin = right
+        fabSync.layoutParams = params
+    }
+
+
+    private fun layoutSyncFab() {
+        val small = super.getResources().getDimensionPixelSize(R.dimen.fab_small_margin)
+        val big   = super.getResources().getDimensionPixelSize(R.dimen.fab_big_margin)
+        when(super.requireActivity().windowManager.defaultDisplay.rotation) {
+            Surface.ROTATION_0   -> setSyncFabMargins(bottom = big,   right = small)
+            Surface.ROTATION_90  -> setSyncFabMargins(bottom = small, right = big)
+            Surface.ROTATION_180 -> setSyncFabMargins(bottom = big,   right = small)
+            Surface.ROTATION_270 -> setSyncFabMargins(bottom = small, right = small)
+        }
+    }
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////
     // LIFECYCLE:
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         prBarInitial.visibility = View.VISIBLE
+        layoutSyncFab()
         val vm = super.viewModel; val owner = super.getViewLifecycleOwner()
 
         prBarInitial.isVisible = vm.isLaunchInitial

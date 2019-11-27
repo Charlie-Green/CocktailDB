@@ -9,6 +9,7 @@
         <item name="colorAccent">@color/Yellow</item>
         <item name="android:colorBackground">@color/Purple</item>
         <item name="android:textColor">@color/Orange</item>
+        <item name="android:navigationBarColor">#00000000</item>
     </style>
 
     <style name="SearchViewTheme" parent="Widget.AppCompat.Light.SearchView">

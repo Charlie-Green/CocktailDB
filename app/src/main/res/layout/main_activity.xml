@@ -6,7 +6,7 @@
         android:id="@+id/cdltRoot"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".ui.CocktailDbMainActivity">
+        tools:context=".ui.CocktailDbMainActivity" >
 
     <fragment
             android:id="@+id/navHost"
