@@ -145,6 +145,7 @@ class CocktailRepository(appContext: Context): CocktailAbstractRepository(appCon
 
     fun filterDrinks(list: List<DrinkHeaderEntity>, query: CharSequence):
     List<DrinkHeaderEntity> {
+        android.util.Log.v("Search", "Searching ${list.size} drinks for \"$query\"")
         val subname = query.toString().toLowerCase(Locale.getDefault())
         return list.filter { header ->
             header.name.toLowerCase(Locale.getDefault()).contains(subname)

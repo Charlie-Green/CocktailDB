@@ -61,7 +61,7 @@ class CocktailDbViewModel(app: Application): AndroidViewModel(app) {
                 if(notifyAboutResult) SyncState.SUCCEEDED else SyncState.NO_SYNC
             )
         } catch(exc: Exception) {
-            Log.v("Sync", "${exc.javaClass.name}: ${exc.message}")
+            Log.w("Sync", "${exc.javaClass.name}: ${exc.message}")
             setSyncState(
                 if(notifyAboutResult) SyncState.FAILED else SyncState.NO_SYNC
             )
@@ -77,7 +77,7 @@ class CocktailDbViewModel(app: Application): AndroidViewModel(app) {
     }
 
     fun clearSyncState() {
-        syncStateMLD.value = SyncState.NO_SYNC
+        setSyncState(SyncState.NO_SYNC)
     }
 
 
@@ -87,7 +87,7 @@ class CocktailDbViewModel(app: Application): AndroidViewModel(app) {
     val isLaunchInitial: Boolean
         get() = CocktailDbAppLoads.isLaunchInitial(this.app)
 
-    fun unsetInitialLoad()
+    fun unsetInitialLaunch()
         = CocktailDbAppLoads.unsetInitialLaunch(this.app)
 
 
@@ -114,25 +114,33 @@ class CocktailDbViewModel(app: Application): AndroidViewModel(app) {
     // DRINKS:
 
     private var allDrinks: List<DrinkHeaderEntity>? = null
+    private val DRINKS_SEARCH_LOCK = Any()
+
     private val drinksSearchQueryMLD = MutableLiveData<CharSequence>().apply {
-        value = ""
+        value = null
     }
 
-    private suspend fun createDrinksList(): DrinksList? {
-        val drinks = allDrinks ?: return null
-        return drinksSearchQueryMLD.value?.let {
-            // There is a search query => need to filter drinks.
-            drinksSearchStateMLD.value = SearchState.IN_PROGRESS
-            val result = withContext(Dispatchers.Default) {
-                DrinksList( cocktailRepo.filterDrinks(drinks, it) )
+    private val drinksSearchStateMLD = MutableLiveData<SearchState>().apply {
+        value = SearchState.INACTIVE
+    }
+
+    private suspend fun createDrinksList(): DrinksList {
+        val drinks = allDrinks ?: return DrinksList(listOf())
+        return withContext(Dispatchers.Default) {
+            synchronized(DRINKS_SEARCH_LOCK) {
+                val query = drinksSearchQueryMLD.value
+                       // No search query => return the full list.
+                    ?: return@synchronized DrinksList(drinks).also {
+                        drinksSearchStateMLD.postValue(SearchState.INACTIVE)
+                    }
+
+                // There is a search query => need to filter drinks.
+                drinksSearchStateMLD.postValue(SearchState.IN_PROGRESS)
+                val searchResult = DrinksList( cocktailRepo.filterDrinks(drinks, query) )
+                drinksSearchStateMLD.postValue(SearchState.ACTIVE)
+                return@synchronized searchResult
             }
-            drinksSearchStateMLD.value = SearchState.ACTIVE
-            result
-        } ?:
-            // No search query => return the full list.
-            DrinksList(drinks).also {
-                drinksSearchStateMLD.value = SearchState.ACTIVE
-            }
+        }
     }
 
     private val drinksListMLD = MediatorLiveData<DrinksList>().apply {
@@ -152,14 +160,11 @@ class CocktailDbViewModel(app: Application): AndroidViewModel(app) {
         }
     }
 
-
-    private val drinksSearchStateMLD = MutableLiveData<SearchState>().apply {
-        value = SearchState.INACTIVE
-    }
+    val totalDrinkCount
+        get() = allDrinks?.size ?: 0
 
     val drinksSearchStateLD
         get() = drinksSearchStateMLD
-
 
     fun searchDrinks(query: CharSequence) {
         drinksSearchQueryMLD.value = query
@@ -183,7 +188,6 @@ class CocktailDbViewModel(app: Application): AndroidViewModel(app) {
 
     fun requestThumb(id: Int) {
         viewModelScope.launch(Dispatchers.Main) {
-            android.util.Log.v("getThumb", "ID = $id. URL = ${drinksListMLD.value?.byID(id)?.thumbURL}")
             val url = drinksListMLD.value?.byID(id)?.thumbURL ?: return@launch
             withContext(Dispatchers.IO) {
                 cocktailRepo.getThumb(url)

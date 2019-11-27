@@ -2,7 +2,7 @@
     <string name="app_name">CocktailDB</string>
     <string name="date_modified">Last modified: %s</string>
     <string name="error">Error</string>
-    <string name="hello">Hi. Loving drinks?</string>
+    <string name="hello">Hi! Loving drinks?</string>
     <string name="initial_load_done">
         We know lots of amazing recipes to try. Just tap to dive in!
     </string>

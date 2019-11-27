@@ -1,50 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
+<LinearLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        xmlns:app="http://schemas.android.com/apk/res-auto">
+        android:layout_height="match_parent" >
 
-    <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recvCocktails"
+    <com.google.android.material.appbar.AppBarLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
-    <ProgressBar
-            android:id="@+id/prBarInitial"
-            android:layout_width="@dimen/progress_bar_size"
-            android:layout_height="@dimen/progress_bar_size"
-            android:layout_gravity="center" />
-
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fabSync"
-            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"
-            android:layout_margin="16dp"
-            android:src="@drawable/ic_sync"
-            android:tint="?android:colorBackground"
-            app:fabCustomSize="42dp"/>
+            android:layout_marginBottom="8dp" >
 
-    <ProgressBar
-            android:id="@+id/prBarSync"
-            android:layout_width="@dimen/progress_bar_size"
-            android:layout_height="@dimen/progress_bar_size"
-            android:layout_gravity="bottom|end"
-            android:layout_margin="16dp"
-            android:visibility="gone" />
+        <androidx.appcompat.widget.Toolbar
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?colorPrimaryDark"
+                app:elevation="6dp"
+                app:title="Drinks"
+                app:titleTextColor="?colorAccent" >
+
+            <androidx.appcompat.widget.SearchView
+                    android:id="@+id/vSearch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    app:searchIcon="@drawable/ic_search"
+                    app:closeIcon="@drawable/ic_close"
+                    android:theme="@style/SearchViewTheme" />
+
+        </androidx.appcompat.widget.Toolbar>
+
+    </com.google.android.material.appbar.AppBarLayout>
 
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fabSearch"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="74dp"
-            android:src="@drawable/ic_search"
-            android:tint="?android:colorBackground"
-            app:fabCustomSize="42dp" />
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1" >
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+        <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recvCocktails"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+        <ProgressBar
+                android:id="@+id/prBarInitial"
+                android:layout_width="@dimen/progress_bar_size"
+                android:layout_height="@dimen/progress_bar_size"
+                android:layout_gravity="center" />
+
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fabSync"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:layout_margin="16dp"
+                android:src="@drawable/ic_sync"
+                android:tint="?android:colorBackground"
+                app:fabCustomSize="42dp"/>
+
+        <ProgressBar
+                android:id="@+id/prBarSync"
+                android:layout_width="@dimen/progress_bar_size"
+                android:layout_height="@dimen/progress_bar_size"
+                android:layout_gravity="bottom|end"
+                android:layout_margin="16dp"
+                android:visibility="gone" />
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+</LinearLayout>

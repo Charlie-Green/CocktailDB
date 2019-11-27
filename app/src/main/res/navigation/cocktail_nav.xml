@@ -13,7 +13,15 @@
                 android:id="@+id/actViewDrinkRecipe"
                 app:destination="@id/fragmRecipe" />
 
+        <action
+                android:id="@+id/actSearchDrinks"
+                app:destination="@id/dialogSearchDrinks" />
+
     </fragment>
+
+    <dialog
+            android:id="@+id/dialogSearchDrinks"
+            android:name="by.vadim_churun.individual.cocktaildb.ui.drink.DrinksSearchDialog" />
 
     <fragment
             android:id="@+id/fragmRecipe"

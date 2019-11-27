@@ -1,14 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- Default application theme. -->
-    <style name="AppThemeDefault" parent="Theme.AppCompat.Light.DarkActionBar">
+    <!-- Default application theme. -->  <!-- A custom toolbar is used. -->
+    <style name="AppThemeDefault" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/PurpleDark</item>
         <item name="colorPrimaryDark">@color/PurpleDark</item>
         <item name="colorAccent">@color/Yellow</item>
         <item name="android:colorBackground">@color/Purple</item>
         <item name="android:textColor">@color/Orange</item>
+    </style>
+
+    <style name="SearchViewTheme" parent="Widget.AppCompat.Light.SearchView">
+        <item name="android:editTextColor">?android:textColor</item>
     </style>
 
 </resources>

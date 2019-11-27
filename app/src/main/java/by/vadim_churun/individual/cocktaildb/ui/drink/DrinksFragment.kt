@@ -4,6 +4,10 @@ import android.app.AlertDialog
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.view.View
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+import androidx.appcompat.widget.SearchView
+import androidx.appcompat.widget.Toolbar
 import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
@@ -12,7 +16,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import by.vadim_churun.individual.cocktaildb.R
 import by.vadim_churun.individual.cocktaildb.ui.CocktailDbAbstractFragment
 import by.vadim_churun.individual.cocktaildb.vm.represent.*
-import by.vadim_churun.individual.cocktaildb.vm.state.SyncState
+import by.vadim_churun.individual.cocktaildb.vm.state.*
 import kotlinx.android.synthetic.main.drinks_fragment.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -22,7 +26,7 @@ class DrinksFragment: CocktailDbAbstractFragment(R.layout.drinks_fragment) {
     //////////////////////////////////////////////////////////////////////////////////////////////
     // UI:
 
-    private fun applyDrinks(drinks: DrinksList) {
+    private fun displayDrinks(drinks: DrinksList) {
         val newAdapter = DrinksAdapter(super.requireContext(), drinks, findNavController()) { id ->
             super.viewModel.requestThumb(id)
         }
@@ -62,10 +66,49 @@ class DrinksFragment: CocktailDbAbstractFragment(R.layout.drinks_fragment) {
     }
 
     private fun notifyLoadFinished() {
-        if(!InitialLaunchNotification.wasCreated) return
+        if(!InitialLaunchNotification.needNotifyLoadFinished)
+            return
         lifecycleScope.launch(Dispatchers.Main) {
             InitialLaunchNotification.modifyLoadFinished(super.requireActivity())
         }
+    }
+
+
+    private fun setSearchViewDimensions(width: Int, height: Int) {
+        vSearch.layoutParams = (vSearch.layoutParams as Toolbar.LayoutParams?)?.apply {
+            this.width = width
+            this.height = height
+        } ?: Toolbar.LayoutParams(width, height)
+    }
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////
+    // SEARCH VIEW:
+
+    private fun setSeachViewListeners() {
+        vSearch.setOnQueryTextListener(object: SearchView.OnQueryTextListener {
+            override fun onQueryTextChange(newText: String): Boolean {
+                this@DrinksFragment.viewModel.searchDrinks(newText)
+                return true    // Query was handled.
+            }
+
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return true    // Query has been handled in onQueryTextChanged.
+            }
+        })
+
+        vSearch.setOnSearchClickListener {
+            setSearchViewDimensions(MATCH_PARENT, WRAP_CONTENT)
+        }
+
+        vSearch.setOnCloseListener {
+            setSearchViewDimensions(WRAP_CONTENT, WRAP_CONTENT)
+            false    // No need to override the default behaviour.
+        }
+    }
+
+    private fun applySearchState(state: SearchState) {
+        android.util.Log.v("Search", "State: ${state.name}")
     }
 
 
@@ -76,16 +119,17 @@ class DrinksFragment: CocktailDbAbstractFragment(R.layout.drinks_fragment) {
         prBarInitial.visibility = View.VISIBLE
         val vm = super.viewModel; val owner = super.getViewLifecycleOwner()
 
-        if(vm.isLaunchInitial) {
+        prBarInitial.isVisible = vm.isLaunchInitial
+        if(vm.isLaunchInitial)
             notifyLoading()
-            super.viewModel.unsetInitialLoad()
-        }
 
         vm.drinksListLD.observe(owner, Observer { drinks ->
-            applyDrinks(drinks)
-            prBarInitial.isVisible = (drinks.size == 0)
-            if(!prBarInitial.isVisible)
+            displayDrinks(drinks)
+            if(vm.isLaunchInitial && vm.totalDrinkCount != 0) {
+                prBarInitial.visibility = View.GONE
                 notifyLoadFinished()
+                vm.unsetInitialLaunch()
+            }
         })
 
         vm.drinkThumbLD.observe(owner, Observer { thumb ->
@@ -103,6 +147,11 @@ class DrinksFragment: CocktailDbAbstractFragment(R.layout.drinks_fragment) {
                 notifySyncFailed()
                 vm.clearSyncState()
             }
+        })
+
+        setSeachViewListeners()
+        vm.drinksSearchStateLD.observe(super.getViewLifecycleOwner(), Observer { state ->
+            applySearchState(state)
         })
     }
 }

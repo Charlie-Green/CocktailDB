@@ -26,8 +26,8 @@ internal object InitialLaunchNotification {
     private var updated = false
     private var channelRegistered = (Build.VERSION.SDK_INT < 26)
 
-    val wasCreated: Boolean
-        get() = created
+    val needNotifyLoadFinished: Boolean
+        get() = created && !updated
 
 
                              // channelRegistered the variable guarantees that a notification channel
@@ -84,7 +84,7 @@ internal object InitialLaunchNotification {
     }
 
     suspend fun modifyLoadFinished(activity: Activity) {
-        if(!created || updated) return
+        if(!this.needNotifyLoadFinished) return
         showNotification(activity, R.drawable.ic_initial_load_done, R.string.initial_load_done)
         updated = true
     }
