@@ -187,7 +187,12 @@ class CocktailDbViewModel(app: Application): AndroidViewModel(app) {
         get() = drinkThumbMLD
 
     fun requestThumb(id: Int) {
-        viewModelScope.launch(Dispatchers.Main) {
+        drinkThumbMLD.value?.takeIf { thumb ->
+            thumb.drinkID == id
+        }?.also {
+            android.util.Log.v("Thumb", "Applying a pre-cached thumb.")
+            drinkThumbMLD.value = it
+        } ?: viewModelScope.launch(Dispatchers.Main) {
             val url = drinksListMLD.value?.byID(id)?.thumbURL ?: return@launch
             withContext(Dispatchers.IO) {
                 cocktailRepo.getThumb(url)

@@ -4,6 +4,7 @@ import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
@@ -62,9 +63,8 @@ class DrinksAdapter(
 
     fun addThumb(thumb: DrinkThumb) {
         list.setImageFor(thumb.drinkID, thumb.image)
-        list.positionFor(thumb.drinkID)?.also {
-            super.notifyItemChanged(it)
-        }
+        val position = list.positionFor(thumb.drinkID) ?: return
+        super.notifyItemChanged(position)
     }
 
 

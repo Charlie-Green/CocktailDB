@@ -7,6 +7,7 @@ import android.view.Surface
 import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.*
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.isVisible
@@ -40,14 +41,15 @@ class DrinksFragment: CocktailDbAbstractFragment(R.layout.drinks_fragment) {
         }
         recvCocktails.swapAdapter(newAdapter, true)
         curPosition?.also {
-            android.util.Log.v("UI", "Scrolling to position $it")
             recvCocktails.layoutManager?.scrollToPosition(it)
         }
     }
 
     private fun applyDrinkThumb(thumb: DrinkThumb) {
-        val adapter = recvCocktails.adapter as DrinksAdapter?
-        adapter?.addThumb(thumb)
+        val adapter = recvCocktails.adapter as DrinksAdapter? ?: return
+        recvCocktails.post {
+            adapter.addThumb(thumb)
+        }
     }
 
     private fun notifySyncFailed() {
@@ -60,15 +62,15 @@ class DrinksFragment: CocktailDbAbstractFragment(R.layout.drinks_fragment) {
 
     private fun notifyLoading() {
         lifecycleScope.launch(Dispatchers.Main) {
-            InitialLaunchNotification.showLoading(super.requireActivity())
+            FirstLaunchNotifUtils.showLoading(super.requireActivity())
         }
     }
 
     private fun notifyLoadFinished() {
-        if(!InitialLaunchNotification.needNotifyLoadFinished)
+        if(!FirstLaunchNotifUtils.needNotifyLoadFinished)
             return
         lifecycleScope.launch(Dispatchers.Main) {
-            InitialLaunchNotification.modifyLoadFinished(super.requireActivity())
+            FirstLaunchNotifUtils.modifyLoadFinished(super.requireActivity())
         }
     }
 
@@ -120,7 +122,6 @@ class DrinksFragment: CocktailDbAbstractFragment(R.layout.drinks_fragment) {
         params.rightMargin = right
         fabSync.layoutParams = params
     }
-
 
     private fun layoutSyncFab() {
         val small = super.getResources().getDimensionPixelSize(R.dimen.fab_small_margin)
@@ -176,5 +177,16 @@ class DrinksFragment: CocktailDbAbstractFragment(R.layout.drinks_fragment) {
         vm.drinksSearchStateLD.observe(super.getViewLifecycleOwner(), Observer { state ->
             applySearchState(state)
         })
+    }
+
+    override fun onStart() {
+        super.onStart()
+        RequestThumbsCallbackUtils.register(
+            super.requireActivity() as AppCompatActivity, recvCocktails )
+    }
+
+    override fun onStop() {
+        RequestThumbsCallbackUtils.unregister(super.requireContext())
+        super.onStop()
     }
 }

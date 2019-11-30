@@ -15,7 +15,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 
-internal object InitialLaunchNotification {
+internal object FirstLaunchNotifUtils {
     ///////////////////////////////////////////////////////////////////////////////////////////////
     // FIELDS, PROPERTIES HELP:
 

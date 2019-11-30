@@ -21,7 +21,7 @@ class RecipeFragment: CocktailDbAbstractFragment(R.layout.recipe_fragment) {
     }
 
     private fun applyRecipe(recipe: ItemizedRecipe) {
-        tvName.text = recipe.drink.name
+        ctbLayout.title = recipe.drink.name
         tvDateModified.text = super.getString(R.string.date_modified, recipe.dateModified)
         frltIngredients.isVisible = (recipe.ingredientsList != null)
         recipe.ingredientsList?.also { tvIngredients.text = it }
@@ -53,6 +53,11 @@ class RecipeFragment: CocktailDbAbstractFragment(R.layout.recipe_fragment) {
 
         lifecycleScope.launch(Dispatchers.Main) {
             applyRecipe( super.viewModel.getRecipe(drinkID) )
+            super.viewModel.requestThumb(drinkID)
         }
+
+        val display = super.requireActivity().windowManager.defaultDisplay
+        RecipeToolbarUtils.setMaximumHeight(appbarLayout, display)
+        RecipeToolbarUtils.setupOffsetListener(appbarLayout, scrltContent)
     }
 }

@@ -15,7 +15,7 @@ class ItemizedRecipe private constructor(
     companion object {
         private val DATE_FORMAT = SimpleDateFormat(
             /* TODO: Localize this better. */ "dd-MMM-yyyy", Locale.getDefault() )
-        private val LISTITEM_MARK = HtmlCompat.fromHtml("&#8266;", 0)
+        private val LISTITEM_MARK = HtmlCompat.fromHtml("&#8226;", 0)
 
         fun fromEntity(entity: RecipeEntity): ItemizedRecipe {
             if(entity.ingredients.isEmpty())

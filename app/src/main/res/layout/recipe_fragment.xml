@@ -1,38 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" >
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <LinearLayout
-            android:orientation="vertical"
+    <!-- A hardcoded height is used for preview, only. It is then changed programmatically. -->
+    <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/appbarLayout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
+            android:layout_height="210dp" >
 
-        <!-- Hardcoded height is for preview, only. It is then changed programmatically. -->
-        <ImageView
-            android:id="@+id/imgvThumb"
+        <com.google.android.material.appbar.CollapsingToolbarLayout
+                android:id="@+id/ctbLayout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:contentScrim="?colorPrimaryDark"
+                app:layout_scrollFlags="scroll|exitUntilCollapsed|snap"
+                app:collapsedTitleTextAppearance="@style/DrinkNameCollapsed"
+                app:expandedTitleTextAppearance="@style/DrinkNameExpanded"
+                app:expandedTitleGravity="bottom"
+                app:expandedTitleMarginBottom="4dp" >
+
+            <ImageView
+                    android:id="@+id/imgvThumb"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@color/DrinkDefaultBack"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_cocktail" />
+
+            <androidx.appcompat.widget.Toolbar
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/min_recipe_toolbar_height"
+                    app:layout_collapseMode="parallax"
+                    app:layout_collapseParallaxMultiplier="0.3" />
+
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+
+    <!-- The hardcoded margin is changed programmatically. -->
+    <ScrollView
+            android:id="@+id/scrltContent"
             android:layout_width="match_parent"
-            android:layout_height="210dp"
-            android:background="@color/DrinkDefaultBack"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_cocktail" />
-
+            android:layout_height="match_parent"
+            android:layout_marginTop="210dp"
+            android:layout_marginLeft="6dp"
+            android:layout_marginRight="6dp" >
 
         <LinearLayout
                 android:orientation="vertical"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="6dp"
-                android:layout_marginRight="6dp" >
-
-            <TextView
-                    android:id="@+id/tvName"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textSize="24sp"
-                    android:textStyle="bold"
-                    android:text="Name" />
+                android:layout_height="wrap_content" >
 
             <TextView
                     android:id="@+id/tvDateModified"
@@ -46,7 +67,7 @@
                     android:id="@+id/frltIngredients"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="18dp"  >
+                    android:layout_marginTop="18dp" >
 
                 <ImageView
                         android:layout_width="match_parent"
@@ -93,6 +114,6 @@
 
         </LinearLayout>
 
-    </LinearLayout>
+    </ScrollView>
 
-</ScrollView>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
