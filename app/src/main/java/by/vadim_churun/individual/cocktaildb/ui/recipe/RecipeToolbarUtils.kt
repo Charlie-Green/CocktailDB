@@ -34,10 +34,10 @@ object RecipeToolbarUtils {
 
         val res = appbar.context.resources
         val baseHeight = res.getDimensionPixelSize(R.dimen.min_recipe_toolbar_height)
-        appbar.addOnOffsetChangedListener(object: AppBarLayout.OnOffsetChangedListener {
-            override fun onOffsetChanged(abLayout: AppBarLayout, offset: Int) {
+        appbar.addOnOffsetChangedListener(
+            AppBarLayout.OnOffsetChangedListener { abLayout, offset ->
                 setContentMargin(baseHeight + abLayout.totalScrollRange + offset)
             }
-        })
+        )
     }
 }

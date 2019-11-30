@@ -124,21 +124,27 @@ class CocktailDbViewModel(app: Application): AndroidViewModel(app) {
         value = SearchState.INACTIVE
     }
 
-    private suspend fun createDrinksList(): DrinksList {
+    private suspend fun mapAllDrinksToDrinksList(): DrinksList {
         val drinks = allDrinks ?: return DrinksList(listOf())
+
+        fun createList(): DrinksList {
+            val query = drinksSearchQueryMLD.value
+            if(query == null) {
+                // No search query => return the full list.
+                drinksSearchStateMLD.postValue(SearchState.INACTIVE)
+                return DrinksList(drinks)
+            }
+
+            // There is a search query => need to filter drinks.
+            drinksSearchStateMLD.postValue(SearchState.IN_PROGRESS)
+            val searchResult = DrinksList( cocktailRepo.filterDrinks(drinks, query) )
+            drinksSearchStateMLD.postValue(SearchState.ACTIVE)
+            return searchResult
+        }
+
         return withContext(Dispatchers.Default) {
             synchronized(DRINKS_SEARCH_LOCK) {
-                val query = drinksSearchQueryMLD.value
-                       // No search query => return the full list.
-                    ?: return@synchronized DrinksList(drinks).also {
-                        drinksSearchStateMLD.postValue(SearchState.INACTIVE)
-                    }
-
-                // There is a search query => need to filter drinks.
-                drinksSearchStateMLD.postValue(SearchState.IN_PROGRESS)
-                val searchResult = DrinksList( cocktailRepo.filterDrinks(drinks, query) )
-                drinksSearchStateMLD.postValue(SearchState.ACTIVE)
-                return@synchronized searchResult
+                createList()
             }
         }
     }
@@ -148,14 +154,14 @@ class CocktailDbViewModel(app: Application): AndroidViewModel(app) {
         addSource(cocktailRepo.drinkHeadersLD) { headers ->
             viewModelScope.launch(Dispatchers.Main) {
                 allDrinks = headers
-                value = createDrinksList()
+                value = mapAllDrinksToDrinksList()
             }
         }
 
         // When a new search query arrives:
         addSource(drinksSearchQueryMLD) { query ->
             viewModelScope.launch(Dispatchers.Main) {
-                value = createDrinksList()
+                value = mapAllDrinksToDrinksList()
             }
         }
     }
@@ -187,10 +193,9 @@ class CocktailDbViewModel(app: Application): AndroidViewModel(app) {
         get() = drinkThumbMLD
 
     fun requestThumb(id: Int) {
-        drinkThumbMLD.value?.takeIf { thumb ->
-            thumb.drinkID == id
+        drinkThumbMLD.value?.takeIf {
+            it.drinkID == id
         }?.also {
-            android.util.Log.v("Thumb", "Applying a pre-cached thumb.")
             drinkThumbMLD.value = it
         } ?: viewModelScope.launch(Dispatchers.Main) {
             val url = drinksListMLD.value?.byID(id)?.thumbURL ?: return@launch

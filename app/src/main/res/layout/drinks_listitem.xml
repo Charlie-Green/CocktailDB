@@ -6,6 +6,7 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/cocktail_card_height"
         android:layout_margin="12dp"
+        app:cardBackgroundColor="?android:colorBackground"
         app:cardCornerRadius="8dp"
         app:cardElevation="6dp" >
 
@@ -14,11 +15,11 @@
             android:layout_height="match_parent" >
 
         <ImageView
-            android:id="@+id/imgvThumb"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_cocktail" />
+                android:id="@+id/imgvThumb"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_cocktail" />
 
         <FrameLayout
                 android:layout_width="match_parent"

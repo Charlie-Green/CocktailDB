@@ -5,8 +5,6 @@ import android.util.Log
 import java.util.Calendar
 import by.vadim_churun.individual.cocktaildb.db.entity.*
 import by.vadim_churun.individual.cocktaildb.remote.pojo.*
-import by.vadim_churun.individual.cocktaildb.repo.exception.UnknownMeasureUnitException
-import java.lang.NumberFormatException
 import java.text.SimpleDateFormat
 
 

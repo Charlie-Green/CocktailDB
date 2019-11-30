@@ -3,8 +3,7 @@ package by.vadim_churun.individual.cocktaildb.ui.drink
 import android.app.AlertDialog
 import android.os.Bundle
 import android.util.DisplayMetrics
-import android.view.Surface
-import android.view.View
+import android.view.*
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import androidx.appcompat.app.AppCompatActivity
@@ -14,6 +13,7 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.*
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import by.vadim_churun.individual.cocktaildb.R
 import by.vadim_churun.individual.cocktaildb.ui.CocktailDbAbstractFragment
 import by.vadim_churun.individual.cocktaildb.vm.represent.*
@@ -23,15 +23,33 @@ import kotlinx.coroutines.*
 
 
 class DrinksFragment: CocktailDbAbstractFragment(R.layout.drinks_fragment) {
+    ////////////////////////////////////////////////////////////////////////////////////////////
+    // COMPANION:
+
+    companion object {
+        private var listPosition = -1
+
+        private fun trySaveListPosition(list: RecyclerView) {
+            val layman = list.layoutManager as GridLayoutManager?
+            layman?.findFirstVisibleItemPosition()?.also {
+                listPosition = it
+            }
+        }
+    }
+
+
     //////////////////////////////////////////////////////////////////////////////////////////////
     // UI:
 
     private fun displayDrinks(drinks: DrinksList) {
-        val newAdapter = DrinksAdapter(super.requireContext(), drinks, findNavController()) { id ->
-            super.viewModel.requestThumb(id)
-        }
+        DrinksFragment.trySaveListPosition(recvCocktails)
+
+        val newAdapter =
+            DrinksAdapter(super.requireContext(), drinks, findNavController() ) { id ->
+                super.viewModel.requestThumb(id)
+            }
+
         val layman = recvCocktails.layoutManager as GridLayoutManager?
-        val curPosition = layman?.findFirstVisibleItemPosition()
         recvCocktails.layoutManager = layman ?: run {
             val metrs = DisplayMetrics()
             super.requireActivity().windowManager.defaultDisplay.getMetrics(metrs)
@@ -40,9 +58,9 @@ class DrinksFragment: CocktailDbAbstractFragment(R.layout.drinks_fragment) {
             GridLayoutManager(super.requireContext(), metrs.widthPixels / cardHeight)
         }
         recvCocktails.swapAdapter(newAdapter, true)
-        curPosition?.also {
-            recvCocktails.layoutManager?.scrollToPosition(it)
-        }
+
+        if(DrinksFragment.listPosition > 0)
+            recvCocktails.layoutManager?.scrollToPosition(DrinksFragment.listPosition)
     }
 
     private fun applyDrinkThumb(thumb: DrinkThumb) {
@@ -139,6 +157,8 @@ class DrinksFragment: CocktailDbAbstractFragment(R.layout.drinks_fragment) {
     // LIFECYCLE:
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        android.util.Log.v("Drinks", "onViewCreated. savedInstanceState: $savedInstanceState")
+
         prBarInitial.visibility = View.VISIBLE
         layoutSyncFab()
         val vm = super.viewModel; val owner = super.getViewLifecycleOwner()
@@ -187,6 +207,7 @@ class DrinksFragment: CocktailDbAbstractFragment(R.layout.drinks_fragment) {
 
     override fun onStop() {
         RequestThumbsCallbackUtils.unregister(super.requireContext())
+        DrinksFragment.trySaveListPosition(recvCocktails)
         super.onStop()
     }
 }

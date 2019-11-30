@@ -4,12 +4,13 @@ import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
+import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.recyclerview.widget.RecyclerView
 import by.vadim_churun.individual.cocktaildb.R
+import by.vadim_churun.individual.cocktaildb.db.entity.DrinkHeaderEntity
 import by.vadim_churun.individual.cocktaildb.ui.recipe.RecipeFragment
 import by.vadim_churun.individual.cocktaildb.vm.represent.*
 import kotlinx.android.synthetic.main.drinks_listitem.view.*
@@ -34,8 +35,9 @@ class DrinksAdapter(
     ///////////////////////////////////////////////////////////////////////////////////////////////
     // USER INTERACTION:
 
-    private class HighlightOrClickListener(private val holder: DrinkViewHolder):
-    GestureDetector.SimpleOnGestureListener() {
+    private class HighlightOrClickListener(
+        private val holder: DrinkViewHolder
+    ): GestureDetector.SimpleOnGestureListener() {
         override fun onDown(event: MotionEvent): Boolean {
             holder.imgvNameHighlight.fade(true)
             return true
@@ -45,6 +47,18 @@ class DrinksAdapter(
             holder.imgvThumb.performClick()
             return true
         }
+    }
+
+    private fun navigateRecipe(holder: DrinkViewHolder, drink: DrinkHeaderEntity) {
+        holder.imgvThumb.transitionName = "thumbImageView"
+        val navExtras = FragmentNavigatorExtras(
+            holder.imgvThumb to holder.imgvThumb.transitionName!!
+        )
+        val args = Bundle().apply {
+            putInt(RecipeFragment.ARG_DRINK_ID, drink.ID)
+        }
+
+        navController.navigate(R.id.actViewDrinkRecipe, args, null, navExtras)
     }
 
 
@@ -81,6 +95,8 @@ class DrinksAdapter(
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onBindViewHolder(holder: DrinkViewHolder, position: Int) {
+        holder.imgvThumb.transitionName = "NotUniqueTransitionName"
+
         val drink = list.at(position)
         val thumb = list.imageFor(drink.ID)
         if(thumb == null) {
@@ -105,10 +121,7 @@ class DrinksAdapter(
             return@setOnTouchListener detector.onTouchEvent(event)
         }
         holder.imgvThumb.setOnClickListener {
-            val args = Bundle().apply {
-                putInt(RecipeFragment.ARG_DRINK_ID, drink.ID)
-            }
-            navController.navigate(R.id.actViewDrinkRecipe, args)
+            navigateRecipe(holder, drink)
         }
     }
 }

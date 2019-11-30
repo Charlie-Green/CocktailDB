@@ -3,7 +3,7 @@
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        xmlns:app="http://schemas.android.com/apk/res-auto">
+        xmlns:app="http://schemas.android.com/apk/res-auto" >
 
     <!-- A hardcoded height is used for preview, only. It is then changed programmatically. -->
     <com.google.android.material.appbar.AppBarLayout
@@ -15,22 +15,44 @@
                 android:id="@+id/ctbLayout"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                app:contentScrim="?colorPrimaryDark"
                 app:layout_scrollFlags="scroll|exitUntilCollapsed|snap"
                 app:collapsedTitleTextAppearance="@style/DrinkNameCollapsed"
-                app:expandedTitleTextAppearance="@style/DrinkNameExpanded"
+                app:expandedTitleTextAppearance="@style/InvisibleText"
+                app:contentScrim="?colorPrimaryDark"
                 app:expandedTitleGravity="bottom"
-                app:expandedTitleMarginBottom="8dp"
-                app:expandedTitleMarginStart="6dp" >
+                app:expandedTitleMarginBottom="4dp" >
 
-            <ImageView
-                    android:id="@+id/imgvThumb"
-                    android:transitionName="thumbImageView"
+            <GridLayout
+                    android:columnCount="2"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:background="@color/DrinkDefaultBack"
-                    android:scaleType="fitCenter"
-                    android:src="@drawable/ic_cocktail" />
+                    android:background="?android:colorBackground" >
+
+                <ImageView
+                        android:id="@+id/imgvThumb"
+                        android:transitionName="thumbImageView"
+                        android:layout_row="1"
+                        android:layout_rowSpan="2"
+                        android:layout_column="0"
+                        android:layout_columnWeight="1"
+                        android:layout_marginEnd="8dp"
+                        android:background="@color/DrinkDefaultBack"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/ic_cocktail" />
+
+                <TextView
+                        android:id="@+id/tvNameLand"
+                        android:layout_columnWeight="1"
+                        android:layout_gravity="fill"
+                        android:gravity="bottom"
+                        android:textAppearance="@style/DrinkNameExpanded" />
+
+                <TextView
+                        android:id="@+id/tvDateModified"
+                        android:layout_columnWeight="1"
+                        android:textAppearance="@style/RecipeDateModified" />
+
+            </GridLayout>
 
             <androidx.appcompat.widget.Toolbar
                     android:layout_width="match_parent"
@@ -57,19 +79,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" >
 
-            <TextView
-                    android:id="@+id/tvDateModified"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="@style/RecipeDateModified"
-                    android:text="@string/date_modified" />
-
-
             <FrameLayout
-                    android:id="@+id/frltIngredients"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="18dp" >
+                android:id="@+id/frltIngredients"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp" >
 
                 <ImageView
                         android:layout_width="match_parent"
@@ -107,12 +121,12 @@
             </FrameLayout>
 
             <TextView
-                    android:id="@+id/tvRecipe"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="18dp"
-                    android:textSize="16sp"
-                    android:text="Recipe" />
+                android:id="@+id/tvRecipe"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:textSize="16sp"
+                android:text="Recipe" />
 
         </LinearLayout>
 
