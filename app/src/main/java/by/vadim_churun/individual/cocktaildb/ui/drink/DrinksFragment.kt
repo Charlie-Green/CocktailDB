@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import by.vadim_churun.individual.cocktaildb.R
 import by.vadim_churun.individual.cocktaildb.ui.CocktailDbAbstractFragment
+import by.vadim_churun.individual.cocktaildb.vm.CocktailDbViewModel
 import by.vadim_churun.individual.cocktaildb.vm.represent.*
 import by.vadim_churun.individual.cocktaildb.vm.state.*
 import kotlinx.android.synthetic.main.drinks_fragment.*
@@ -42,30 +43,30 @@ class DrinksFragment: CocktailDbAbstractFragment(R.layout.drinks_fragment) {
     // UI:
 
     private fun displayDrinks(drinks: DrinksList) {
-        DrinksFragment.trySaveListPosition(recvCocktails)
+        DrinksFragment.trySaveListPosition(recvDrinks)
 
         val newAdapter =
             DrinksAdapter(super.requireContext(), drinks, findNavController() ) { id ->
                 super.viewModel.requestThumb(id)
             }
 
-        val layman = recvCocktails.layoutManager as GridLayoutManager?
-        recvCocktails.layoutManager = layman ?: run {
+        val layman = recvDrinks.layoutManager as GridLayoutManager?
+        recvDrinks.layoutManager = layman ?: run {
             val metrs = DisplayMetrics()
             super.requireActivity().windowManager.defaultDisplay.getMetrics(metrs)
             val cardHeight = super.getResources()
                 .getDimensionPixelSize(R.dimen.cocktail_card_height)
             GridLayoutManager(super.requireContext(), metrs.widthPixels / cardHeight)
         }
-        recvCocktails.swapAdapter(newAdapter, true)
+        recvDrinks.swapAdapter(newAdapter, true)
 
         if(DrinksFragment.listPosition > 0)
-            recvCocktails.layoutManager?.scrollToPosition(DrinksFragment.listPosition)
+            recvDrinks.layoutManager?.scrollToPosition(DrinksFragment.listPosition)
     }
 
     private fun applyDrinkThumb(thumb: DrinkThumb) {
-        val adapter = recvCocktails.adapter as DrinksAdapter? ?: return
-        recvCocktails.post {
+        val adapter = recvDrinks.adapter as DrinksAdapter? ?: return
+        recvDrinks.post {
             adapter.addThumb(thumb)
         }
     }
@@ -78,18 +79,30 @@ class DrinksFragment: CocktailDbAbstractFragment(R.layout.drinks_fragment) {
             .show()
     }
 
-    private fun notifyLoading() {
+    private fun showInitialLoadNotification() {
         lifecycleScope.launch(Dispatchers.Main) {
             FirstLaunchNotifUtils.showLoading(super.requireActivity())
         }
     }
 
-    private fun notifyLoadFinished() {
+    private fun modifyInitialLoadNotification() {
         if(!FirstLaunchNotifUtils.needNotifyLoadFinished)
             return
         lifecycleScope.launch(Dispatchers.Main) {
             FirstLaunchNotifUtils.modifyLoadFinished(super.requireActivity())
         }
+    }
+
+    private fun updateStateDependentUi(vm: CocktailDbViewModel) {
+        prBarCentral.isVisible =
+            (vm.currentSyncState == SyncState.IN_PROGRESS && vm.isLaunchInitial) ||
+            (vm.currentDrinksSearchState == SearchState.IN_PROGRESS)
+        tvNothingFound.isVisible = (vm.currentDrinksSearchState == SearchState.ACTIVE) &&
+            (recvDrinks.adapter?.itemCount == 0)
+        prBarSync.isVisible = (vm.currentSyncState == SyncState.IN_PROGRESS)
+        fabSync.isVisible = !prBarSync.isVisible
+        tvDataWillArrive.isVisible = (!prBarCentral.isVisible) &&
+            (!tvNothingFound.isVisible) && (vm.totalDrinkCount == 0)
     }
 
 
@@ -121,12 +134,9 @@ class DrinksFragment: CocktailDbAbstractFragment(R.layout.drinks_fragment) {
 
         vSearch.setOnCloseListener {
             setSearchViewDimensions(WRAP_CONTENT, WRAP_CONTENT)
+            super.viewModel.stopSearchDrinks()
             false    // No need to override the default behaviour.
         }
-    }
-
-    private fun applySearchState(state: SearchState) {
-        android.util.Log.v("Search", "State: ${state.name}")
     }
 
 
@@ -157,21 +167,18 @@ class DrinksFragment: CocktailDbAbstractFragment(R.layout.drinks_fragment) {
     // LIFECYCLE:
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        android.util.Log.v("Drinks", "onViewCreated. savedInstanceState: $savedInstanceState")
-
-        prBarInitial.visibility = View.VISIBLE
-        layoutSyncFab()
         val vm = super.viewModel; val owner = super.getViewLifecycleOwner()
 
-        prBarInitial.isVisible = vm.isLaunchInitial
+        layoutSyncFab()
+        updateStateDependentUi(vm)
         if(vm.isLaunchInitial)
-            notifyLoading()
+            showInitialLoadNotification()
 
         vm.drinksListLD.observe(owner, Observer { drinks ->
             displayDrinks(drinks)
+            updateStateDependentUi(vm)
             if(vm.isLaunchInitial && vm.totalDrinkCount != 0) {
-                prBarInitial.visibility = View.GONE
-                notifyLoadFinished()
+                modifyInitialLoadNotification()
                 vm.unsetInitialLaunch()
             }
         })
@@ -184,30 +191,29 @@ class DrinksFragment: CocktailDbAbstractFragment(R.layout.drinks_fragment) {
             super.viewModel.forceSync()
         }
 
-        vm.syncStateLD.observe(owner, Observer { state ->
-            prBarSync.isVisible = (state == SyncState.IN_PROGRESS)
-            fabSync.isVisible = !prBarSync.isVisible
-            if(state == SyncState.FAILED) {
+        vm.syncStateLD.observe(owner, Observer { newState ->
+            updateStateDependentUi(vm)
+            if(newState == SyncState.FAILED) {
                 notifySyncFailed()
                 vm.clearSyncState()
             }
         })
 
         setSeachViewListeners()
-        vm.drinksSearchStateLD.observe(super.getViewLifecycleOwner(), Observer { state ->
-            applySearchState(state)
+        vm.drinksSearchStateLD.observe(super.getViewLifecycleOwner(), Observer { _ ->
+            updateStateDependentUi(vm)
         })
     }
 
     override fun onStart() {
         super.onStart()
         RequestThumbsCallbackUtils.register(
-            super.requireActivity() as AppCompatActivity, recvCocktails )
+            super.requireActivity() as AppCompatActivity, recvDrinks )
     }
 
     override fun onStop() {
         RequestThumbsCallbackUtils.unregister(super.requireContext())
-        DrinksFragment.trySaveListPosition(recvCocktails)
+        DrinksFragment.trySaveListPosition(recvDrinks)
         super.onStop()
     }
 }

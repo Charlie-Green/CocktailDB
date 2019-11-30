@@ -36,6 +36,9 @@ class CocktailDbViewModel(app: Application): AndroidViewModel(app) {
     val syncStateLD: LiveData<SyncState>
         get() = syncStateMLD
 
+    val currentSyncState
+        get() = syncStateMLD.value ?: SyncState.NO_SYNC
+
 
     /** @return whether the state was set successfully. **/
     private fun setSyncState(state: SyncState): Boolean {
@@ -171,6 +174,9 @@ class CocktailDbViewModel(app: Application): AndroidViewModel(app) {
 
     val drinksSearchStateLD
         get() = drinksSearchStateMLD
+
+    val currentDrinksSearchState
+        get() = drinksSearchStateMLD.value ?: SearchState.INACTIVE
 
     fun searchDrinks(query: CharSequence) {
         drinksSearchQueryMLD.value = query

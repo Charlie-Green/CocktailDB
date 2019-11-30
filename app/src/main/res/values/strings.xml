@@ -1,6 +1,9 @@
 <resources>
     <string name="app_name">CocktailDB</string>
     <string name="date_modified">Last modified: %s</string>
+    <string name="data_will_arrive">
+        Drinks will appear here as soon as we fetch some.
+    </string>
     <string name="error">Error</string>
     <string name="hello">Hi! Loving drinks?</string>
     <string name="initial_load_done">
@@ -13,6 +16,7 @@
         TheCocktailDB uses this to welcome you to the fascinating world of drinks.
     </string>
     <string name="initial_load_notifchannel_name">Initial Load</string>
+    <string name="nothing_found">Sorry, we can\'t find anything like that.</string>
     <string name="ok">OK</string>
     <string name="recipe_ingreds_head">What You\'ll Need:</string>
     <string name="recipe_unknown">Recipe is unknown.</string>

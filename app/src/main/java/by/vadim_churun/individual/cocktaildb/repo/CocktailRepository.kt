@@ -2,6 +2,7 @@ package by.vadim_churun.individual.cocktaildb.repo
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.util.Log
 import by.vadim_churun.individual.cocktaildb.db.entity.*
 import by.vadim_churun.individual.cocktaildb.remote.CocktailApi
 import java.io.IOException
@@ -68,7 +69,7 @@ class CocktailRepository(appContext: Context): CocktailAbstractRepository(appCon
             return try {
                 fetchIngredient(ingredientName).also { newIngredients.add(it) }
             } catch(exc: Exception) {
-                Log.e("Sync", "No such ingredient \"$ingredientName\"")
+                Log.w("Sync", "No such ingredient \"$ingredientName\"")
                 null
             }
         }

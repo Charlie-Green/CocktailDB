@@ -1,8 +1,7 @@
 package by.vadim_churun.individual.cocktaildb.ui.recipe
 
 import android.util.DisplayMetrics
-import android.view.Display
-import android.view.ViewGroup
+import android.view.*
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import by.vadim_churun.individual.cocktaildb.R
@@ -10,7 +9,7 @@ import com.google.android.material.appbar.AppBarLayout
 
 
 /** Used to set up size and behaviour of [RecipeFragment]'s collapsing toolbar. **/
-object RecipeToolbarUtils {
+internal object RecipeToolbarUtils {
     private val ViewGroup.coordinatorParams: CoordinatorLayout.LayoutParams
         get() = this.layoutParams as CoordinatorLayout.LayoutParams?
             ?: CoordinatorLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)

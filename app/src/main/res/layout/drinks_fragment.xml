@@ -39,16 +39,34 @@
             android:layout_weight="1" >
 
         <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recvCocktails"
+                android:id="@+id/recvDrinks"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
 
         <ProgressBar
-                android:id="@+id/prBarInitial"
+                android:id="@+id/prBarCentral"
                 android:layout_width="@dimen/progress_bar_size"
                 android:layout_height="@dimen/progress_bar_size"
                 android:layout_gravity="center" />
 
+        <TextView
+                android:id="@+id/tvDataWillArrive"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:alpha="0.4"
+                android:textSize="14sp"
+                android:text="@string/data_will_arrive" />
+
+        <TextView
+                android:id="@+id/tvNothingFound"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:gravity="center_horizontal"
+                android:alpha="0.4"
+                android:textSize="14sp"
+                android:text="@string/nothing_found" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/fabSync"

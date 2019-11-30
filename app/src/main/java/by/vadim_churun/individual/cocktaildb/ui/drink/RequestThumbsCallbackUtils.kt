@@ -1,10 +1,7 @@
 package by.vadim_churun.individual.cocktaildb.ui.drink
 
 import android.content.Context
-import android.net.ConnectivityManager
-import android.net.Network
-import android.net.NetworkCapabilities
-import android.net.NetworkRequest
+import android.net.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.children
@@ -22,6 +19,11 @@ internal object RequestThumbsCallbackUtils {
         val vm = CocktailDbViewModel.get(ownerActivity)
         return object: ConnectivityManager.NetworkCallback() {
             override fun onAvailable(network: Network) {
+                if(vm.isLaunchInitial) {
+                    vm.forceSync()
+                    return
+                }
+
                 if(targetList.isEmpty()) return
                 val adapter = targetList.adapter as DrinksAdapter? ?: return
 

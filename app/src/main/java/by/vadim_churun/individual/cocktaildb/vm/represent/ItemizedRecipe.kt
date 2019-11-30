@@ -3,7 +3,7 @@ package by.vadim_churun.individual.cocktaildb.vm.represent
 import androidx.core.text.HtmlCompat
 import by.vadim_churun.individual.cocktaildb.db.entity.DrinkEntity
 import by.vadim_churun.individual.cocktaildb.db.entity.RecipeEntity
-import java.text.SimpleDateFormat
+import java.text.DateFormat
 import java.util.*
 
 
@@ -13,8 +13,6 @@ class ItemizedRecipe private constructor(
     val dateModified: CharSequence?
 ) {
     companion object {
-        private val DATE_FORMAT = SimpleDateFormat(
-            /* TODO: Localize this better. */ "dd-MMM-yyyy", Locale.getDefault() )
         private val LISTITEM_MARK = HtmlCompat.fromHtml("&#8226;", 0)
 
         fun fromEntity(entity: RecipeEntity): ItemizedRecipe {
@@ -28,8 +26,9 @@ class ItemizedRecipe private constructor(
                 sb.append("$LISTITEM_MARK ${pair.ingredient.name}: ${pair.lot.measure}")
             }
 
-            val dateModified = entity.drink.dateModified?.time
-            return ItemizedRecipe(entity.drink, sb, dateModified?.let { DATE_FORMAT.format(it) })
+            val date = entity.drink.dateModified?.time
+            val dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM, Locale.getDefault())
+            return ItemizedRecipe(entity.drink, sb, date?.let { dateFormat.format(it) })
         }
     }
 }
